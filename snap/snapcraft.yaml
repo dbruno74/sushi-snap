@@ -1,0 +1,144 @@
+name: sushi-snap 
+base: core20
+version: '0.1' 
+summary: Sushi Digital Audio Workstation 
+description: |
+   A snap package for Sushi Digital Audio Workstation
+
+grade: devel 
+confinement: classic 
+
+apps:
+  sushi:
+     command: usr/local/bin/sushi
+     plugs:
+       - audio-playback
+       - home
+     environment:
+             LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib:$SNAP/lib/x86_64-linux-gnu:$SNAP/usr/local/lib:$LD_LIBRARY_PATH
+  jackd:
+     command: usr/bin/jackd -d alsa
+#     command: usr/local/bin/snapcraft-preload $SNAP/usr/bin/jackd -d alsa
+#     command-chain:
+#     - usr/bin/jackd_env.sh
+     daemon: simple
+     environment:
+       JACK_DRIVER_DIR: $SNAP/usr/lib/x86_64-linux-gnu/jack
+       JACK_NO_AUDIO_RESERVATION: 1
+       LD_LIBRARY_PATH: $SNAP/usr/local/lib:$LD_LIBRARY_PATH
+#       SNAPCRAFT_PRELOAD_REDIRECT_ONLY_SHM: 1
+#       SEMWRAP_DEBUG: 1
+     plugs:
+       - audio-playback
+       - alsa
+       - home
+       - network-bind
+
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
+  /etc/alsa/conf.d:
+    bind: $SNAP/etc/alsa/conf.d
+
+parts:
+  snapcraft-preload:
+    source: https://github.com/sergiusens/snapcraft-preload.git
+    plugin: cmake
+    override-prime: |
+       snapcraftctl prime
+       mkdir -p $SNAPCRAFT_PRIME/lib
+       cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload.so
+       cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload32.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload32.so
+    build-packages:
+       - on amd64:
+         - gcc-multilib
+         - g++-multilib
+    stage-packages:
+       - on amd64:
+         - lib32stdc++6
+  sushi:
+    source: https://github.com/elk-audio/sushi.git
+    source-tag: 0.10.1 
+    source-type: git
+    plugin: cmake 
+    override-build: |
+      patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/lv2_port.cpp.patch
+      ./generate --cmake-args="-DWITH_XENOMAI=off -DWITH_VST2=off -DWITH_RPC_INTERFACE=on -DWITH_UNIT_TESTS=off -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PRIME/usr/local" -t release -b && cd build/release && make install
+    override-prime: |
+      snapcraftctl prime
+        mkdir -p lib/x86_64-linux-gnu
+        cd lib/x86_64-linux-gnu
+        ln -s ../../usr/lib/x86_64-linux-gnu/liblo.so.7 liblo.so.7
+        ln -s ../../usr/lib/x86_64-linux-gnu/libgrpc++.so.1 libgrpc++.so.1
+        cd ../../usr/lib/x86_64-linux-gnu
+        ln -s ../../local/lib/libtwine.so.0.1 libtwine.so.0.1
+#      cp $SNAPCRAFT_PROJECT_DIR/jackd_env.sh usr/bin
+#      chmod 755 usr/bin/jackd_env.sh
+    build-packages:
+      - build-essential
+      - python
+      - libsndfile1
+      - libsndfile1-dev
+      - jackd2
+      - libjack-jackd2-dev
+      - libasound2
+      - libasound2-dev
+      - liblilv-dev
+      - lilv-utils
+      - lv2-dev
+      - liblo-dev
+    stage-packages:
+      - libsndfile1
+      - libsndfile1-dev
+      - jackd2
+      - libjack-jackd2-dev
+      - libasound2
+      - libasound2-dev
+      - liblilv-dev
+      - lilv-utils
+      - lv2-dev
+      - liblo-dev
+    after:
+      - grpc
+  grpc:
+     source: https://github.com/grpc/grpc.git
+     source-tag: v1.20.1
+     source-type: git
+     plugin: make
+     override-build: |
+       # patch for "Rename gettid() functions" issue, see https://github.com/grpc/grpc/pull/18950
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/log_linux.cc.patch
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/log_posix.cc.patch
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/ev_epollex_linux.cc.patch
+       # remove -Werror from Makefile 
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/Makefile.patch
+       make
+       make install
+       # copy installed bin and lib to prime
+       mkdir -p $SNAPCRAFT_PRIME/usr/lib
+       cp -R $SNAPCRAFT_PART_BUILD/libs/opt/* $SNAPCRAFT_PRIME/usr/lib
+       mkdir -p $SNAPCRAFT_PRIME/usr/local/bin
+       cp -R $SNAPCRAFT_PART_BUILD/bins/opt/* $SNAPCRAFT_PRIME/usr/local/bin
+       
+     build-packages:
+       - build-essential
+       - autoconf
+       - libtool
+       - pkg-config
+       - libprotobuf-dev
+       - libprotobuf17
+       - libprotoc-dev
+       - libprotoc17
+       - protobuf-compiler
+     stage-packages:
+       - build-essential
+       - autoconf
+       - libtool
+       - pkg-config
+       - libprotobuf-dev
+       - libprotobuf17
+       - libprotoc-dev
+       - libprotoc17
+       - protobuf-compiler

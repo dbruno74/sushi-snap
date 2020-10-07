@@ -1,0 +1,11 @@
+--- src/library/lv2/lv2_port.cpp	2020-09-25 11:43:32.988345061 +0000
++++ src/library/lv2/lv2_port.cpp.new	2020-09-25 11:42:12.212300777 +0000
+@@ -78,7 +78,7 @@
+             _min = lilv_node_as_float(minNode);
+         }
+ 
+-        _control = isnan(default_value) ? _def : default_value;
++        _control = std::isnan(default_value) ? _def : default_value;
+ 
+         lilv_node_free(minNode);
+         lilv_node_free(maxNode);

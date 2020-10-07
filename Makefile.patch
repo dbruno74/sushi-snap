@@ -1,0 +1,11 @@
+--- Makefile	2020-09-25 10:52:27.961419156 +0000
++++ Makefile.new	2020-09-25 11:12:17.726970318 +0000
+@@ -353,7 +353,7 @@
+ CXXFLAGS += -stdlib=libc++
+ endif
+ CXXFLAGS += -Wnon-virtual-dtor
+-CPPFLAGS += -g -Wall -Wextra -Werror -Wno-long-long -Wno-unused-parameter -DOSATOMIC_USE_INLINED=1 -Wno-deprecated-declarations -Ithird_party/nanopb -DPB_FIELD_32BIT
++CPPFLAGS += -g -Wall -Wextra -Wno-long-long -Wno-unused-parameter -DOSATOMIC_USE_INLINED=1 -Wno-deprecated-declarations -Ithird_party/nanopb -DPB_FIELD_32BIT
+ COREFLAGS += -fno-rtti -fno-exceptions
+ LDFLAGS += -g
+ 
