@@ -200,7 +200,7 @@ parts:
          make
          mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux
          mkdir -p $SNAPCRAFT_PART_INSTALL/data/VST3
-         cp $SNAPCRAFT_PART_BUILD/build/VST3/mda.vst3/Contents/armv7l-linux/mda.so $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux
+         if [ ${SNAP_ARCH} = "armhf" ]; then cp $SNAPCRAFT_PART_BUILD/build/VST3/mda.vst3/Contents/armv7l-linux/mda.so $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux; fi
          cp $SNAPCRAFT_PROJECT_DIR/config_play_vst3_desktop.json $SNAPCRAFT_PART_INSTALL/data/VST3
      build-packages:
        - on amd64 to armhf:
