@@ -6,31 +6,38 @@ A snap package for Sushi Digital Audio Workstation
 
 To install the snap from the store use:
 
-`sudo snap install sushi-snap --classic`
+`snap install sushi-snap`
+
+then manually connect the following interfaces:
+`snap connect sushi-snap:alsa
+snap connect sushi-snap:home
+snap connect sushi-snap:process-control`
+
 
 ## Run
 To run sushi-snap:
 
-1. Download your favourite plugin. We suggest to start with mda-vst3, available here:
-https://github.com/elk-audio/elk-examples/releases/download/examples_01/mda-vst3.vst3.tar.xz
+1. Plug-in your USB midi keyboard
 
-2. Unpack it in your home
+2. Restart services
+`snap restart sushi-snap.jackd`
+`snap restart sushi-snap.sushi`
+`snap restart sushi-snap.connect-keyboard`
 
-3. Create a config.json file (for mda-vst3, you can take it from here:
-https://github.com/elk-audio/elk-examples/blob/master/mda-jx10-vst3/config_play_vst3_desktop.json
+3. ... play!
 
-4. Set the right path to your plugin (look for "plugins" stanza, then "path")
+## Note
+- sushi-snap is shipped with jackd and MDA JX10 VST3 plugin. T
+- if you want to change sushi or jackd command line, you can view/change with snap get / snap set
+`
+$ snap get sushi-snap
+Key             Value
+jackd-cmd-line  -d alsa
+sushi-cmd-line  -j --connect-ports -c /root/snap/sushi-snap/x1/VST3/config_play_vst3_desktop.json
+`
+`snap set sushi-snap jackd-cmd-line="your custom command line"`
+`snap set sushi-snap sushi-cmd-line="your custom command line"`
 
-5. Launch sushi
-`sudo sushi-snap.sushi -j-- --connect-ports  -c config.json` 
-
-6. plug your midi keyboard/controller and connect it to sushi
-`aconnect xx yy`
-where xx is the client id of your keyboard/controller and yy is the client id of sushi
-Client ids can be found with
-`aconnect -l`
-
-7. play!
   
 ## Building
 
