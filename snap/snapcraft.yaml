@@ -6,33 +6,54 @@ description: |
    A snap package for Sushi Digital Audio Workstation
 
 grade: devel 
-confinement: classic 
+confinement: strict
+
+architectures:
+  - build-on: amd64
+    run-on: amd64,armhf
+  - build-on: armhf
+    run-on: armhf
 
 apps:
   sushi:
-     command: usr/local/bin/sushi
+     command: usr/local/bin/snapcraft-preload $SNAP/usr/local/bin/sushi_launcher  
+     daemon: simple
+     after: 
+       - jackd
+     before:
+       - connect-keyboard
      plugs:
        - audio-playback
        - home
+       - network-bind
+       - alsa
+       - process-control
      environment:
-             LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib:$SNAP/lib/x86_64-linux-gnu:$SNAP/usr/local/lib:$LD_LIBRARY_PATH
+             LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib/arm-linux-gnueabihf:$SNAP/usr/lib:$SNAP/lib/x86_64-linux-gnu:$SNAP/lib/arm-linux-gnueabihf:$SNAP/usr/local/lib:$LD_LIBRARY_PATH
   jackd:
-     command: usr/bin/jackd -d alsa
-#     command: usr/local/bin/snapcraft-preload $SNAP/usr/bin/jackd -d alsa
-#     command-chain:
-#     - usr/bin/jackd_env.sh
+     command: usr/local/bin/snapcraft-preload $SNAP/usr/local/bin/jackd_launcher
      daemon: simple
+     before: 
+       - sushi
+       - connect-keyboard
      environment:
-       JACK_DRIVER_DIR: $SNAP/usr/lib/x86_64-linux-gnu/jack
+       JACK_DRIVER_DIR: $SNAP/usr/lib/jack
        JACK_NO_AUDIO_RESERVATION: 1
        LD_LIBRARY_PATH: $SNAP/usr/local/lib:$LD_LIBRARY_PATH
-#       SNAPCRAFT_PRELOAD_REDIRECT_ONLY_SHM: 1
-#       SEMWRAP_DEBUG: 1
      plugs:
        - audio-playback
        - alsa
        - home
        - network-bind
+       - process-control
+
+  connect-keyboard:
+     command: usr/local/bin/connect_keyboard
+     daemon: oneshot
+     after: 
+       - sushi
+     plugs:
+       - alsa
 
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
@@ -43,6 +64,26 @@ layout:
     bind: $SNAP/etc/alsa/conf.d
 
 parts:
+  connect-keyboard:
+    plugin: dump
+    source: .
+    organize:
+       connect_keyboard: usr/local/bin/connect_keyboard
+    prime:
+       - usr/local/bin/connect_keyboard
+  jackd2:
+    source: http://archive.ubuntu.com/ubuntu/pool/main/j/jackd2/jackd2_1.9.12~dfsg.orig.tar.gz
+    plugin: nil
+    override-build: |
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/JackSocket_snap.patch
+       ./waf configure --prefix $SNAPCRAFT_PART_INSTALL/usr
+       ./waf
+       ./waf install
+    override-prime: |
+       snapcraftctl prime
+       cp $SNAPCRAFT_PROJECT_DIR/jackd_launcher usr/local/bin
+    build-packages:
+       - python3 
   snapcraft-preload:
     source: https://github.com/sergiusens/snapcraft-preload.git
     plugin: cmake
@@ -50,13 +91,15 @@ parts:
        snapcraftctl prime
        mkdir -p $SNAPCRAFT_PRIME/lib
        cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload.so
-       cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload32.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload32.so
+       if [ ${SNAP_ARCH} = "amd64" ]; then cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload32.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload32.so; fi
     build-packages:
-       - on amd64:
+       - on amd64 to amd64:
          - gcc-multilib
          - g++-multilib
+       - on amd64 to armhf:
+         - gcc-arm-linux-gnueabihf:amd64
     stage-packages:
-       - on amd64:
+       - on amd64 to amd64:
          - lib32stdc++6
   sushi:
     source: https://github.com/elk-audio/sushi.git
@@ -65,23 +108,24 @@ parts:
     plugin: cmake 
     override-build: |
       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/lv2_port.cpp.patch
-      ./generate --cmake-args="-DWITH_XENOMAI=off -DWITH_VST2=off -DWITH_RPC_INTERFACE=on -DWITH_UNIT_TESTS=off -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PRIME/usr/local" -t release -b && cd build/release && make install
+      ./generate --cmake-args="-DWITH_XENOMAI=off -DWITH_VST2=off -DWITH_RPC_INTERFACE=on -DWITH_UNIT_TESTS=off -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PRIME/usr/local -DGRPC_INCLUDE_DIR=$SNAPCRAFT_STAGE/usr/local/include -DCMAKE_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/local/lib" -t release -b && cd build/release && make install
     override-prime: |
       snapcraftctl prime
-        mkdir -p lib/x86_64-linux-gnu
-        cd lib/x86_64-linux-gnu
-        ln -s ../../usr/lib/x86_64-linux-gnu/liblo.so.7 liblo.so.7
-        ln -s ../../usr/lib/x86_64-linux-gnu/libgrpc++.so.1 libgrpc++.so.1
-        cd ../../usr/lib/x86_64-linux-gnu
+        cp $SNAPCRAFT_PROJECT_DIR/sushi_launcher usr/local/bin
+        mkdir -p lib/$SNAPCRAFT_ARCH_TRIPLET
+        cd lib/$SNAPCRAFT_ARCH_TRIPLET
+        rm -f liblo.so.7
+        ln -s ../../usr/lib/$SNAPCRAFT_ARCH_TRIPLET/liblo.so.7 liblo.so.7
+        rm -f libgrpc++.so.1
+        ln -s ../../usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libgrpc++.so.1 libgrpc++.so.1
+        cd ../../usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+        rm -f libtwine.so.0.1
         ln -s ../../local/lib/libtwine.so.0.1 libtwine.so.0.1
-#      cp $SNAPCRAFT_PROJECT_DIR/jackd_env.sh usr/bin
-#      chmod 755 usr/bin/jackd_env.sh
     build-packages:
       - build-essential
       - python
       - libsndfile1
       - libsndfile1-dev
-      - jackd2
       - libjack-jackd2-dev
       - libasound2
       - libasound2-dev
@@ -89,17 +133,18 @@ parts:
       - lilv-utils
       - lv2-dev
       - liblo-dev
+      - on amd64 to armhf:
+        - gcc-arm-linux-gnueabihf:amd64
     stage-packages:
       - libsndfile1
       - libsndfile1-dev
-      - jackd2
-      - libjack-jackd2-dev
       - libasound2
       - libasound2-dev
       - liblilv-dev
       - lilv-utils
       - lv2-dev
       - liblo-dev
+      - alsa-utils
     after:
       - grpc
   grpc:
@@ -114,14 +159,15 @@ parts:
        patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/ev_epollex_linux.cc.patch
        # remove -Werror from Makefile 
        patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/Makefile.patch
+       # set root dir for ldconfig; "Prevent shell calls longer than ARG_MAX", see here: https://github.com/grpc/grpc/commit/0892788776d60d92a0cddcd22078779166b736db
+       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/Makefile_2.patch
        make
-       make install
+       export prefix=$SNAPCRAFT_PART_INSTALL/usr/local && make install
        # copy installed bin and lib to prime
        mkdir -p $SNAPCRAFT_PRIME/usr/lib
        cp -R $SNAPCRAFT_PART_BUILD/libs/opt/* $SNAPCRAFT_PRIME/usr/lib
        mkdir -p $SNAPCRAFT_PRIME/usr/local/bin
        cp -R $SNAPCRAFT_PART_BUILD/bins/opt/* $SNAPCRAFT_PRIME/usr/local/bin
-       
      build-packages:
        - build-essential
        - autoconf
@@ -132,6 +178,8 @@ parts:
        - libprotoc-dev
        - libprotoc17
        - protobuf-compiler
+       - on amd64 to armhf:
+         - gcc-arm-linux-gnueabihf:amd64
      stage-packages:
        - build-essential
        - autoconf
@@ -142,3 +190,20 @@ parts:
        - libprotoc-dev
        - libprotoc17
        - protobuf-compiler
+  mda-vst3:
+     source: https://github.com/elk-audio/mda-vst3.git
+     source-type: git
+     plugin: cmake
+     override-build: |
+         mkdir -p build && cd build
+         cmake -DCMAKE_CXX_FLAGS="-DRELEASE=1" ..
+         make
+         mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux
+         mkdir -p $SNAPCRAFT_PART_INSTALL/data/VST3
+         cp $SNAPCRAFT_PART_BUILD/build/VST3/mda.vst3/Contents/armv7l-linux/mda.so $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux
+         cp $SNAPCRAFT_PROJECT_DIR/config_play_vst3_desktop.json $SNAPCRAFT_PART_INSTALL/data/VST3
+     build-packages:
+       - on amd64 to armhf:
+         - gcc-arm-linux-gnueabihf:amd64
+    
+
