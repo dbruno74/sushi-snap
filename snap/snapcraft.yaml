@@ -1,6 +1,6 @@
 name: sushi-snap 
 base: core20
-version: '0.1' 
+version: '0.4' 
 summary: Sushi Digital Audio Workstation 
 description: |
    A snap package for Sushi Digital Audio Workstation
