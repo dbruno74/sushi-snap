@@ -1,0 +1,33 @@
+#!/bin/sh -e
+
+sushi_cmd_line="$(snapctl get sushi-cmd-line)"
+
+jackd_status=$(snapctl services sushi-snap.jackd | awk '/sushi-snap.jackd/ {print $3}')
+jackd_started=0
+i=0
+max_retry=10
+
+while [ "$jackd_status" = "inactive" ]
+do
+	if [ $i -eq $max_retry ]
+	then
+		echo "jackd is inactive, sushi cannot start, exiting..."
+		exit -1
+	fi
+
+	echo "jackd not started"	
+	if [ $jackd_started -eq 0 ] 
+	then
+		echo "Starting jackd first ..."
+		snapctl start sushi-snap.jackd
+		jackd_started=1
+	fi
+
+	sleep 1
+
+	jackd_status=$(snapctl services sushi-snap.jackd | awk '/sushi-snap.jackd/ {print $3}')
+	i=[$i+1]
+done
+
+sleep 1
+$SNAP/usr/local/bin/sushi $sushi_cmd_line

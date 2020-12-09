@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+jackd_cmd_line="$(snapctl get jackd-cmd-line)"
+
+$SNAP/usr/bin/jackd $jackd_cmd_line

@@ -1,0 +1,80 @@
+--- Makefile	2020-10-15 12:50:30.640447058 +0000
++++ Makefile_new	2020-10-15 13:22:07.818548839 +0000
+@@ -2951,6 +2951,14 @@
+ 	$(E) "[INSTALL] Installing public C++ headers"
+ 	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
+ 	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX1), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX1), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX2), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX2), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX3), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX3), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX4), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
++	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX4), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
+ 
+ install-static: install-static_c install-static_cxx
+ 
+@@ -3041,7 +3049,7 @@
+ endif
+ ifneq ($(SYSTEM),MINGW32)
+ ifneq ($(SYSTEM),Darwin)
+-	$(Q) ldconfig || true
++	$(Q) ldconfig -r $(SNAPCRAFT_PART_INSTALL) || true
+ endif
+ endif
+ 
+@@ -3103,7 +3111,7 @@
+ endif
+ ifneq ($(SYSTEM),MINGW32)
+ ifneq ($(SYSTEM),Darwin)
+-	$(Q) ldconfig || true
++	$(Q) ldconfig -r $(SNAPCRAFT_PART_INSTALL) || true
+ endif
+ endif
+ 
+@@ -3120,7 +3128,7 @@
+ endif
+ ifneq ($(SYSTEM),MINGW32)
+ ifneq ($(SYSTEM),Darwin)
+-	$(Q) ldconfig || true
++	$(Q) ldconfig -r $(SNAPCRAFT_PART_INSTALL) || true
+ endif
+ endif
+ 
+@@ -5320,6 +5328,8 @@
+     include/grpc++/support/stub_options.h \
+     include/grpc++/support/sync_stream.h \
+     include/grpc++/support/time.h \
++
++PUBLIC_HEADERS_CXX1 += \
+     include/grpcpp/alarm.h \
+     include/grpcpp/alarm_impl.h \
+     include/grpcpp/channel.h \
+@@ -5376,6 +5386,8 @@
+     include/grpcpp/support/stub_options.h \
+     include/grpcpp/support/sync_stream.h \
+     include/grpcpp/support/time.h \
++
++PUBLIC_HEADERS_CXX2 += \
+     include/grpc/support/alloc.h \
+     include/grpc/support/atm.h \
+     include/grpc/support/atm_gcc_atomic.h \
+@@ -5427,6 +5439,8 @@
+     include/grpc/impl/codegen/propagation_bits.h \
+     include/grpc/impl/codegen/slice.h \
+     include/grpc/impl/codegen/status.h \
++
++PUBLIC_HEADERS_CXX3 += \
+     include/grpc++/impl/codegen/async_stream.h \
+     include/grpc++/impl/codegen/async_unary_call.h \
+     include/grpc++/impl/codegen/byte_buffer.h \
+@@ -5457,6 +5471,8 @@
+     include/grpc++/impl/codegen/stub_options.h \
+     include/grpc++/impl/codegen/sync_stream.h \
+     include/grpc++/impl/codegen/time.h \
++
++PUBLIC_HEADERS_CXX4 += \
+     include/grpcpp/impl/codegen/async_generic_service.h \
+     include/grpcpp/impl/codegen/async_stream.h \
+     include/grpcpp/impl/codegen/async_unary_call.h \

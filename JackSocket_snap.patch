@@ -1,0 +1,26 @@
+diff -Naur ./posix/JackSocket.cpp ./posix_new/JackSocket.cpp
+--- ./posix/JackSocket.cpp	2020-10-27 17:09:23.127285152 +0000
++++ ./posix_new/JackSocket.cpp	2020-10-27 17:20:08.576620223 +0000
+@@ -35,9 +35,9 @@
+     char ext_client_name[SYNC_MAX_NAME_SIZE + 1];
+     JackTools::RewriteName(client_name, ext_client_name);
+     if (promiscuous) {
+-	    snprintf(res, size, "%s/jack_%s_%d", dir, ext_client_name, which);
++	    snprintf(res, size, "%s/%sjack_%s_%d", dir, SUSHI_SNAP_PREFIX, ext_client_name, which);
+     } else {
+-	    snprintf(res, size, "%s/jack_%s_%d_%d", dir, ext_client_name, JackTools::GetUID(), which);
++	    snprintf(res, size, "%s/%sjack_%s_%d_%d", dir, SUSHI_SNAP_PREFIX, ext_client_name, JackTools::GetUID(), which);
+     }
+ }
+ 
+diff -Naur ./posix/JackSocket.h ./posix_new/JackSocket.h
+--- ./posix/JackSocket.h	2020-10-27 17:09:10.095420249 +0000
++++ ./posix_new/JackSocket.h	2020-10-27 17:20:08.576620223 +0000
+@@ -72,6 +72,7 @@
+ */
+ 
+ #define SOCKET_MAX_NAME_SIZE 256
++#define SUSHI_SNAP_PREFIX "snap.sushi-snap."
+ 
+ 
+ class JackServerSocket

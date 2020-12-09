@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# check if sushi is active. If not, starts it
+sushi_status=$(snapctl services sushi-snap.sushi | awk '/sushi-snap.sushi/ {print $3}')
+sushi_started=0
+i=0
+max_retry=10
+
+while [ "$sushi_status" = "inactive" ]
+do
+        if [ $i -eq $max_retry ]
+        then
+                echo "sushi is inactive, sushi cannot start, exiting..."
+                exit -1
+        fi
+
+        echo "sushi not started"
+        if [ $sushi_started -eq 0 ]
+        then
+                echo "Starting sushi first ..."
+                snapctl start sushi-snap.sushi
+                sushi_started=1
+        fi
+
+        sleep 1
+
+        sushi_status=$(snapctl services sushi-snap.sushi | awk '/sushi-snap.sushi/ {print $3}')
+        i=[$i+1]
+done
+
+sleep 3
+
+# audo-connect midi inputs to sushi
+$(${SNAP}/usr/bin/aconnect -i | awk '/card/ { client=$1;client_num=$2;print client_num }' | awk -F ":" '{ ;print "declare midi_card["NR"]="$1""}')
+$(${SNAP}/usr/bin/aconnect -l | awk '/Sushi/ { client=$1;client_num=$2;print client_num }' | awk -F ":" '{ ;print "declare sushi["NR"]="$1""}')
+
+for i in "${midi_card[@]}"; do ${SNAP}/usr/bin/aconnect "$i":0 "${sushi[1]}"; ${SNAP}/usr/bin/aconnect "$i":1 "${sushi[1]}"; ${SNAP}/usr/bin/aconnect "$i":2 "${sushi[1]}"; done
+
+exit 0

@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+# copy VST config file in SNAP_DATA
+mkdir -p $SNAP_USER_DATA/VST3
+cp $SNAP/data/VST3/config_play_vst3_desktop.json $SNAP_USER_DATA/VST3/config_play_vst3_desktop.json
+
+
+# Default configuration
+snapctl set sushi-cmd-line="-j --connect-ports -c $SNAP_USER_DATA/VST3/config_play_vst3_desktop.json"
+snapctl set jackd-cmd-line="-d alsa"
