@@ -93,13 +93,13 @@ parts:
        cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload.so
        if [ ${SNAP_ARCH} = "amd64" ]; then cp $SNAPCRAFT_PRIME/usr/local/lib/libsnapcraft-preload32.so $SNAPCRAFT_PRIME/lib/libsnapcraft-preload32.so; fi
     build-packages:
-       - on amd64 to amd64:
+       - to amd64:
          - gcc-multilib
          - g++-multilib
        - on amd64 to armhf:
          - gcc-arm-linux-gnueabihf:amd64
     stage-packages:
-       - on amd64 to amd64:
+       - to amd64:
          - lib32stdc++6
   sushi:
     source: https://github.com/elk-audio/sushi.git
