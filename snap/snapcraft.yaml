@@ -5,7 +5,7 @@ summary: Sushi Digital Audio Workstation
 description: |
    A snap package for Sushi Digital Audio Workstation
 
-grade: devel 
+grade: stable 
 confinement: strict
 
 architectures:
