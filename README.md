@@ -9,9 +9,11 @@ To install the snap from the store use:
 `snap install sushi-snap`
 
 then manually connect the following interfaces:
-`snap connect sushi-snap:alsa`
-`snap connect sushi-snap:home`
-`snap connect sushi-snap:process-control`
+```
+snap connect sushi-snap:alsa
+snap connect sushi-snap:home
+snap connect sushi-snap:process-control
+```
 
 
 ## Run
