@@ -31,7 +31,7 @@ snap restart sushi-snap.connect-keyboard
 3. ... play!
 
 ## Note
-- sushi-snap is shipped with jackd and MDA JX10 VST3 plugin. T
+- sushi-snap is shipped with jackd and MDA JX10 VST3 plugin.
 - if you want to change sushi or jackd command line, you can view/change with snap get / snap set
 ```
 $ snap get sushi-snap
