@@ -195,7 +195,7 @@ parts:
      source-type: git
      plugin: cmake
      override-build: |
-         mkdir -p build && cd build
+         #mkdir -p build && cd build
          cmake -DCMAKE_CXX_FLAGS="-DRELEASE=1" ..
          make
          mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux
