@@ -105,10 +105,9 @@ parts:
     source: https://github.com/elk-audio/sushi.git
     source-tag: 0.10.1 
     source-type: git 
-    plugin: cmake
-#    plugin: nil
-#    build-packages: 
-#      - cmake 
+    plugin: nil
+    build-packages: 
+      - cmake 
     override-build: |
       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/lv2_port.cpp.patch
       ./generate --cmake-args="-DWITH_XENOMAI=off -DWITH_VST2=off -DWITH_RPC_INTERFACE=on -DWITH_UNIT_TESTS=off -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PRIME/usr/local -DGRPC_INCLUDE_DIR=$SNAPCRAFT_STAGE/usr/local/include -DCMAKE_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/local/lib" -t release -b && cd build/release && make install
@@ -196,10 +195,9 @@ parts:
   mda-vst3:
      source: https://github.com/elk-audio/mda-vst3.git
      source-type: git
-     plugin: cmake
-#     plugin: nil
-#     build-packages: 
-#         - cmake
+     plugin: nil
+     build-packages: 
+         - cmake
      override-build: |
          mkdir -p build && cd build
          cmake -DCMAKE_CXX_FLAGS="-DRELEASE=1" ..
