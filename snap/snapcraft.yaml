@@ -106,8 +106,6 @@ parts:
     source-tag: 0.10.1 
     source-type: git 
     plugin: nil
-    build-packages: 
-      - cmake 
     override-build: |
       patch -s -p0 < $SNAPCRAFT_PROJECT_DIR/lv2_port.cpp.patch
       ./generate --cmake-args="-DWITH_XENOMAI=off -DWITH_VST2=off -DWITH_RPC_INTERFACE=on -DWITH_UNIT_TESTS=off -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PRIME/usr/local -DGRPC_INCLUDE_DIR=$SNAPCRAFT_STAGE/usr/local/include -DCMAKE_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/local/lib" -t release -b && cd build/release && make install
@@ -124,6 +122,7 @@ parts:
         rm -f libtwine.so.0.1
         ln -s ../../local/lib/libtwine.so.0.1 libtwine.so.0.1
     build-packages:
+      - cmake
       - build-essential
       - python
       - libsndfile1
@@ -196,8 +195,6 @@ parts:
      source: https://github.com/elk-audio/mda-vst3.git
      source-type: git
      plugin: nil
-     build-packages: 
-         - cmake
      override-build: |
          mkdir -p build && cd build
          cmake -DCMAKE_CXX_FLAGS="-DRELEASE=1" ..
@@ -207,6 +204,7 @@ parts:
          if [ ${SNAP_ARCH} = "armhf" ]; then cp $SNAPCRAFT_PART_BUILD/build/VST3/mda.vst3/Contents/armv7l-linux/mda.so $SNAPCRAFT_PART_INSTALL/usr/lib/VST3/mda.vst3/Contents/armv7l-linux; fi
          cp $SNAPCRAFT_PROJECT_DIR/config_play_vst3_desktop.json $SNAPCRAFT_PART_INSTALL/data/VST3
      build-packages:
+       - cmake
        - on amd64 to armhf:
          - gcc-arm-linux-gnueabihf:amd64
     
